@@ -13,6 +13,7 @@ public:
         vector<TreeNode*> result;
         if (n < 1)
             return result;
+            
         result.push_back(new TreeNode(1));
         for (int i = 2; i <= n; i++)
         {
@@ -22,8 +23,10 @@ public:
         
     }
 
+
 private:
 
+//Build BST of n nodes based on BST of n-1 node(s)
 void MakeBST(vector<TreeNode *> & result, int n)
 {
     int temptotal = result.size();
@@ -44,7 +47,7 @@ void MakeBST(vector<TreeNode *> & result, int n)
                 tempdepth --;   
             }                               
             
-            //判断该节点无右节点
+            //该节点无右节点
             if (p -> right == NULL)
             {
                 p -> right = new TreeNode(n);
