@@ -2,116 +2,124 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
+#include <queue>
 using namespace std;
 /*
 void find_word_ladder(vector<string> & wordList, vector< vector<int> > difference, int start, string & endWord)
 {
 }
 */
+
+
+void read_path ( vector< vector<int> > & pred, 
+					int target,
+						int srv,
+							vector <int> & result) {
+
+	if (srv == target) {
+
+		for (int j = 0; j < result.size(); j++){
+			cout << result [j] << ",";
+		}
+		cout << endl;
+		return;
+	}
+	
+	for ( int i = 0; i < pred[target].size(); i++) {
+		result.push_back(target);
+		read_path(pred, pred[target][i], srv, result);
+		result.pop_back();
+	}
+
+}
 int main()
 {
-	string beginWord("hit");
-	string endWord("cog");
-	vector<string> wordList;
-	wordList.push_back("hot");
-	wordList.push_back("dot");
-	wordList.push_back("dog");
-	wordList.push_back("lot");
-	wordList.push_back("log");
+	string beginWord("hot");
+	string endWord("dog");
+	vector<string> wordlist;
+	wordlist.push_back(beginWord);
+	wordlist.push_back("cog");
+	wordlist.push_back("tot");
+	wordlist.push_back("hog");
+	wordlist.push_back("hop");
+	wordlist.push_back("pot");
+	wordlist.push_back("dot");
+	wordlist.push_back(endWord);
 
-	//wordList相互差异个数矩阵
-	int length = beginWord.size();
-	vector< vector<int> > difference (wordList.size(), vector<int>(wordList.size(), 0));
-	for(int i = 0; i < wordList.size(); i ++)
+	//wordlist加上beginWord构建图形
+	vector < vector <int> > graph (wordlist.size());
+	
+	for(int i = 0; i < wordlist.size(); i ++)
 	{
-		for(int j = i + 1; j < wordList.size(); j ++ )
+		for(int j = i + 1; j < wordlist.size(); j ++ )
 		{
 			int difference_numbers = 0;
-			for(int index = 0; index < length; index ++)
+			for(int index = 0; index < beginWord.size(); index ++)
 			{
-				if(wordList[i][index] != wordList[j][index])
+				if(wordlist[i][index] != wordlist[j][index])
 					difference_numbers += 1;
 			}
-			difference[i][j] = difference_numbers;
-			difference[j][i] = difference_numbers;
-		}
-	}
-
-
-	//wordList中与begin和end的差异个数
-	vector< vector<int> > differences_to_beginWord(length + 1);
-	vector<int> differences_to_endWord;
-	for(int i = 0; i < wordList.size(); i++)
-	{
-		int difference_begin = 0, 
-				difference_end = 0;
-
-		for(int index = 0; index < length; index ++)
-		{
-			if(wordList[i][index] != endWord[index])
-				difference_end += 1;
-			if(wordList[i][index] != beginWord[index])
-				difference_begin += 1;
-		}
-		differences_to_endWord.push_back(difference_end);
-		differences_to_beginWord [difference_begin].push_back(i);
-	}
-
-	vector<string> result;
-	result.push_back(beginWord);
-		
-	//构建
-	for(int i = 0; i < differences_to_beginWord[1].size(); i++)
-	{
-		result.push_back(wordList[differences_to_beginWord[1][i]]);
-		int temp_location = 2;
-		int from = differences_to_beginWord[1][i];
-		vector<int> location_start (length + 1);
-		while(1)
-		{
-			if (temp_location == 2 && location_start[2] == differences_to_beginWord[2].size())
-				break;
-			int finded = 0;
-			for(int j = location_start[temp_location]; j < differences_to_beginWord[temp_location].size(); j++)
-			{
-				int to = differences_to_beginWord[temp_location][j];
-				if( difference[to][from] == 1)
-				{
-					result.push_back(wordList[to]);
-					location_start[temp_location] = j + 1; 
-					temp_location += 1;
-					from  = to;
-					if(differences_to_endWord[to] == 1)
-					{
-						//cout << result;
-						break;
-					}
-					finded = 1;
-					break;
-				}
+			if(difference_numbers == 1){
+				graph[j].push_back(i);
+				graph[i].push_back(j);
 			}
-				if(finded == 1 && temp_location < length + 1)
-					continue;
-				else
-				{
-					for(int ii = 0; ii < result.size(); ii++)
-						cout << result[ii] << "," << location_start[ii] << " ";
-					cout << endl;
-					getchar();
-					if(temp_location > length)
-					{
-						result.pop_back();
-						temp_location -= 1;
-						location_start[temp_location] = 0;
-					}
-
-
-					result.pop_back();
-					location_start[temp_location] = 0;
-					temp_location -= 1;	
-					from = differences_to_beginWord[temp_location-1][location_start[temp_location-1]];
-				}
 		}
 	}
+
+	for(int i = 0; i < graph.size(); i++){
+		cout << i << ":" ;
+
+		for (int j = 0; j < graph[i].size(); j++){
+			cout << graph[i][j] << ",";
+		}
+		cout << endl;
+	}
+	
+	//bfs_algorithm	
+	vector < vector<int> > pred (wordlist.size());
+	vector <int> dist (wordlist.size(), -1);
+	dist[0] = 0;
+
+	queue <int> visitQueue;
+	visitQueue.push(0);
+
+	while(!visitQueue.empty()) {
+		int v = visitQueue.front();
+		visitQueue.pop(); 
+
+		for (int i = 0; i < graph[v].size(); i++) {
+			int w = graph[v][i];
+
+			if (dist[w] == -1) {
+				visitQueue.push(w);
+				dist[w] = dist[v] + 1;
+			}
+
+				if (dist[w] == dist[v] + 1) {
+					pred[w].push_back(v);
+			}
+		}
+
+	}
+
+	for(int i = 0; i < pred.size(); i++){
+		cout << i << ":" ;
+
+		for (int j = 0; j < pred[i].size(); j++){
+			cout << pred[i][j] << ",";
+		}
+		cout << endl;
+	}
+	
+	cout << endl;
+	vector <int> result;
+	read_path(pred, graph.size() - 1, 0, result);
+
 	return 0;
 }
+
+
+
+
+
+		
